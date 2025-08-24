@@ -1,0 +1,108 @@
+<!-- Landing Page -->
+<div class="landing-container fade-in">
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-content">
+      <div class="logo">
+        <span class="text-green">Chaos</span><span class="text-red">AI</span>
+      </div>
+      <div class="nav-links">
+        <a routerLink="/auth" class="btn btn-secondary">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1 class="hero-title">
+        <span class="text-green">AI-Powered</span><br>
+        <span class="text-white">Penetration Testing</span><br>
+        <span class="text-red">Platform</span>
+      </h1>
+      <p class="hero-subtitle">
+        Harness the power of artificial intelligence to conduct advanced penetration testing 
+        with automated vulnerability assessment and intelligent attack simulation.
+      </p>
+      <div class="hero-buttons">
+        <a routerLink="/auth" class="btn btn-primary">Launch Terminal</a>
+        <button class="btn btn-secondary" (click)="scrollToFeatures()">Learn More</button>
+      </div>
+    </div>
+    
+    <!-- Terminal Preview -->
+    <div class="terminal-preview">
+      <div class="terminal-header">
+        <div class="terminal-controls">
+          <span class="control red"></span>
+          <span class="control yellow"></span>
+          <span class="control green"></span>
+        </div>
+        <span class="terminal-title">kali@chaosai:~$</span>
+      </div>
+      <div class="terminal-body">
+        <div class="terminal-line" *ngFor="let line of terminalLines; let i = index" 
+             [style.animation-delay]="i * 0.5 + 's'">
+          <span [innerHTML]="line"></span>
+        </div>
+        <div class="cursor"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features" id="features">
+    <div class="container">
+      <h2 class="section-title text-center mb-4">
+        <span class="text-green">Advanced</span> Capabilities
+      </h2>
+      
+      <div class="features-grid">
+        <div class="feature-card" *ngFor="let feature of features">
+          <div class="feature-icon">
+            <i [class]="feature.icon"></i>
+          </div>
+          <h3 class="feature-title">{{ feature.title }}</h3>
+          <p class="feature-description">{{ feature.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="stats">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-item" *ngFor="let stat of stats">
+          <div class="stat-number text-green">{{ stat.number }}</div>
+          <div class="stat-label">{{ stat.label }}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta">
+    <div class="container text-center">
+      <h2 class="cta-title mb-3">Ready to Begin?</h2>
+      <p class="cta-subtitle mb-4">
+        Join the next generation of penetration testers using AI-powered tools
+      </p>
+      <a routerLink="/auth" class="btn btn-primary">Start Your Mission</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-logo">
+          <span class="text-green">Chaos</span><span class="text-red">AI</span>
+        </div>
+        <div class="footer-text">
+          © 2024 ChaosAI. Advanced Penetration Testing Platform.
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>

@@ -1,0 +1,136 @@
+<!-- Authentication Page -->
+<div class="auth-container fade-in">
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-content">
+      <a routerLink="/" class="logo">
+        <span class="text-green">Chaos</span><span class="text-red">AI</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Auth Content -->
+  <div class="auth-content">
+    <div class="auth-card card">
+      <!-- Header -->
+      <div class="auth-header text-center mb-4">
+        <h1 class="auth-title">
+          <span class="text-green">Access</span> Terminal
+        </h1>
+        <p class="auth-subtitle">
+          {{ isLoginMode ? 'Sign in to your penetration testing environment' : 'Create your hacker account' }}
+        </p>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-container text-center">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">{{ isLoginMode ? 'Authenticating...' : 'Creating account...' }}</p>
+      </div>
+
+      <!-- Auth Form -->
+      <form *ngIf="!isLoading" (ngSubmit)="onSubmit()" class="auth-form">
+        <!-- Username (Signup only) -->
+        <div *ngIf="!isLoginMode" class="form-group">
+          <label class="form-label">Username</label>
+          <input 
+            type="text" 
+            class="form-input" 
+            [(ngModel)]="formData.username"
+            name="username"
+            placeholder="Enter your hacker alias"
+            required>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input 
+            type="email" 
+            class="form-input" 
+            [(ngModel)]="formData.email"
+            name="email"
+            placeholder="Enter your email"
+            required>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="password-input">
+            <input 
+              [type]="showPassword ? 'text' : 'password'" 
+              class="form-input" 
+              [(ngModel)]="formData.password"
+              name="password"
+              placeholder="Enter your password"
+              required>
+            <button 
+              type="button" 
+              class="password-toggle"
+              (click)="togglePassword()">
+              {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="error-message mb-3">
+          <span class="text-red">⚠️ {{ errorMessage }}</span>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary w-100 mb-3">
+          {{ isLoginMode ? 'Access Terminal' : 'Create Account' }}
+        </button>
+
+        <!-- Mode Toggle -->
+        <div class="auth-toggle text-center">
+          <span class="text-secondary">
+            {{ isLoginMode ? "Don't have an account?" : "Already have an account?" }}
+          </span>
+          <button 
+            type="button" 
+            class="toggle-btn text-green"
+            (click)="toggleMode()">
+            {{ isLoginMode ? 'Sign Up' : 'Sign In' }}
+          </button>
+        </div>
+      </form>
+
+      <!-- Demo Credentials -->
+      <div *ngIf="isLoginMode" class="demo-info">
+        <h4 class="demo-title text-center mb-2">
+          <span class="text-green">Demo Access</span>
+        </h4>
+
+        <div class="demo-credentials">
+          <div class="demo-item" (click)="fillDemoCredentials('hacker')">
+            <strong>Hacker:</strong> hacker@chaosai.com
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Terminal Preview -->
+    <div class="terminal-side">
+      <div class="terminal-preview">
+        <div class="terminal-header">
+          <div class="terminal-controls">
+            <span class="control red"></span>
+            <span class="control yellow"></span>
+            <span class="control green"></span>
+          </div>
+          <span class="terminal-title">Kali Linux Terminal</span>
+        </div>
+        <div class="terminal-body">
+          <div class="terminal-line" *ngFor="let line of terminalLines; let i = index" 
+               [style.animation-delay]="i * 0.8 + 's'">
+            <span [innerHTML]="line"></span>
+          </div>
+          <div class="cursor"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

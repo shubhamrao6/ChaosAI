@@ -1,0 +1,226 @@
+<!-- Dashboard Component -->
+<div class="dashboard-container" [class]="'theme-' + settings.terminalTheme">
+  <!-- Dashboard Header -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="text-green glow">Chaos</span><span class="text-red">AI</span>
+      </div>
+
+    </div>
+
+    <div class="header-center">
+      <div class="target-info">
+        <label class="target-label">Target:</label>
+        <input 
+          type="text" 
+          class="target-input"
+          [(ngModel)]="currentTarget"
+          placeholder="192.168.1.1 or example.com"
+          (keydown.enter)="setTarget()">
+        <button class="set-target-btn" (click)="setTarget()">Set</button>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="user-info">
+        <svg class="user-avatar" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" />
+        </svg>
+        <span class="username">{{ currentUser?.username || 'Anonymous' }}</span>
+      </div>
+      <div class="header-actions">
+        <button class="header-btn" (click)="toggleFullscreen()" title="Fullscreen">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M5,5H10V7H7V10H5V5M14,5H19V10H17V7H14V5M17,14H19V19H14V17H17V14M10,17V19H5V14H7V17H10Z" />
+          </svg>
+        </button>
+        <button class="header-btn" (click)="showSettings()" title="Settings">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
+          </svg>
+        </button>
+        <button class="header-btn logout-btn" (click)="logout()" title="Logout">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16,17V14H9V10H16V7L21,12L16,17M14,2A2,2 0 0,1 16,4V6H14V4H5V20H14V18H16V20A2,2 0 0,1 14,22H5A2,2 0 0,1 3,20V4A2,2 0 0,1 5,2H14Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Dashboard Content -->
+  <main class="dashboard-main">
+    <!-- Left Panel - Terminal -->
+    <div class="terminal-panel" [class.fullscreen]="terminalFullscreen">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg class="panel-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20,4H4A2,2 0 0,0 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6A2,2 0 0,0 20,4M4,8V6H20V8H4M20,18H4V10H20V18M6,12H8V14H6V12M10,12H18V13H10V12M6,15H14V16H6V15Z" />
+          </svg>
+          Terminal
+        </div>
+        <div class="panel-actions">
+          <button class="panel-btn" (click)="toggleTerminalFullscreen()" title="Fullscreen">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M5,5H10V7H7V10H5V5M14,5H19V10H17V7H14V5M17,14H19V19H14V17H17V14M10,17V19H5V14H7V17H10Z" />
+            </svg>
+          </button>
+          <button class="panel-btn" (click)="restartTerminal()" title="Restart">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12,6V9L16,5L12,1V4A8,8 0 0,0 4,12C4,13.57 4.46,15.03 5.24,16.26L6.7,14.8C6.25,13.97 6,13 6,12A6,6 0 0,1 12,6M18.76,7.74L17.3,9.2C17.74,10.04 18,11 18,12A6,6 0 0,1 12,18V15L8,19L12,23V20A8,8 0 0,0 20,12C20,10.43 19.54,8.97 18.76,7.74Z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="panel-content">
+        <app-terminal></app-terminal>
+      </div>
+    </div>
+
+    <!-- Resize Handle -->
+    <div class="resize-handle" 
+         (mousedown)="startResize($event)"
+         *ngIf="!terminalFullscreen && !chatFullscreen">
+    </div>
+
+    <!-- Right Panel - AI Chat -->
+    <div class="chat-panel" [class.fullscreen]="chatFullscreen">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg class="panel-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7H14A7,7 0 0,1 21,14H22A1,1 0 0,1 23,15V18A1,1 0 0,1 22,19H21V20A2,2 0 0,1 19,22H5A2,2 0 0,1 3,20V19H2A1,1 0 0,1 1,18V15A1,1 0 0,1 2,14H3A7,7 0 0,1 10,7H11V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2M7.5,13A2.5,2.5 0 0,0 5,15.5A2.5,2.5 0 0,0 7.5,18A2.5,2.5 0 0,0 10,15.5A2.5,2.5 0 0,0 7.5,13M16.5,13A2.5,2.5 0 0,0 14,15.5A2.5,2.5 0 0,0 16.5,18A2.5,2.5 0 0,0 19,15.5A2.5,2.5 0 0,0 16.5,13Z" />
+          </svg>
+          Chaos Assistant
+        </div>
+        <div class="panel-actions">
+          <button class="panel-btn" title="Chat History">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M13.5,8H12V13L16.28,15.54L17,14.33L13.5,12.25V8M13,3A9,9 0 0,0 4,12H1L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3" />
+            </svg>
+          </button>
+          <button class="panel-btn" (click)="toggleChatFullscreen()" title="Fullscreen">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M5,5H10V7H7V10H5V5M14,5H19V10H17V7H14V5M17,14H19V19H14V17H17V14M10,17V19H5V14H7V17H10Z" />
+            </svg>
+          </button>
+          <button class="panel-btn" (click)="clearChat()" title="Clear">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="panel-content">
+        <app-chat (executeCommandEvent)="executeCommandInTerminal($event)"></app-chat>
+      </div>
+    </div>
+  </main>
+
+  <!-- Status Bar -->
+  <footer class="status-bar">
+    <div class="status-left">
+      <div class="status-item">
+        <span class="status-icon connected"></span>
+        Connected to Kali Linux
+      </div>
+      <div class="status-item">
+        <span class="status-label">Session:</span>
+        <span class="status-value">{{ sessionId }}</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Target:</span>
+        <span class="status-value">{{ targetHost || 'Not set' }}</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Session Time:</span>
+        <span class="status-value">{{ sessionTime }}</span>
+      </div>
+    </div>
+
+    <div class="status-center">
+      <div class="activity-indicator" *ngIf="isActive">
+        <span class="activity-dot"></span>
+        <span class="activity-text">{{ activityStatus }}</span>
+      </div>
+    </div>
+
+    <div class="status-right">
+      <div class="status-item">
+        <span class="status-label">Commands:</span>
+        <span class="status-value">{{ commandCount }}</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Uptime:</span>
+        <span class="status-value">{{ uptime }}</span>
+      </div>
+      <div class="status-item">
+        <span class="status-value">{{ currentTime }}</span>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" *ngIf="isLoading">
+  <div class="loading-content">
+    <div class="loading-spinner"></div>
+    <h3 class="loading-title">Initializing ChaosAI</h3>
+    <p class="loading-text">{{ loadingMessage }}</p>
+    <div class="loading-progress">
+      <div class="progress-bar" [style.width.%]="loadingProgress"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" *ngIf="showSettingsModal" (click)="closeSettings()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Settings</h3>
+      <button class="close-btn" (click)="closeSettings()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="setting-group">
+        <h4>Terminal Settings</h4>
+        <div class="setting-item">
+          <label>Font Size:</label>
+          <select [(ngModel)]="settings.terminalFontSize">
+            <option value="12">12px</option>
+            <option value="14">14px</option>
+            <option value="16">16px</option>
+            <option value="18">18px</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label>Theme:</label>
+          <select [(ngModel)]="settings.terminalTheme" (change)="applyTheme()">
+            <option value="matrix">Matrix Green</option>
+            <option value="hacker">Hacker Blue</option>
+            <option value="classic">Classic White</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="setting-group">
+        <h4>AI Assistant</h4>
+        <div class="setting-item">
+          <label>
+            <input type="checkbox" [(ngModel)]="settings.aiAutoSuggest">
+            Auto-suggest commands
+          </label>
+        </div>
+        <div class="setting-item">
+          <label>
+            <input type="checkbox" [(ngModel)]="settings.aiVoiceMode">
+            Voice mode (experimental)
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeSettings()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveSettings()">Save Settings</button>
+    </div>
+  </div>
+</div>

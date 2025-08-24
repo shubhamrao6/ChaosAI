@@ -1,0 +1,200 @@
+/* Terminal Component Styles */
+.terminal-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--terminal-bg);
+  overflow: hidden;
+  font-family: 'Fira Code', monospace;
+}
+
+/* Terminal Body */
+.terminal-body {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  background: var(--terminal-bg);
+  color: var(--terminal-text);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.command-history {
+  margin-bottom: 8px;
+}
+
+.command-entry {
+  margin-bottom: 4px;
+  
+  &.command .command-line {
+    color: var(--text-primary);
+  }
+  
+  &.output .output-line {
+    color: var(--terminal-text);
+  }
+  
+  &.error .output-line {
+    color: var(--accent-red);
+  }
+}
+
+.command-line,
+.output-line {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0;
+}
+
+.command-line pre,
+.output-line pre {
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  white-space: pre-wrap;
+}
+
+/* Input Line */
+.input-line {
+  margin-bottom: 4px;
+}
+
+.prompt-line {
+  color: var(--accent-green);
+  margin-bottom: 2px;
+}
+
+.command-line {
+  display: flex;
+  align-items: center;
+}
+
+.prompt-symbol {
+  color: var(--accent-green);
+  flex-shrink: 0;
+}
+
+.command-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  caret-color: var(--accent-green);
+  margin-left: 4px;
+}
+
+/* Executing Line */
+.executing-line {
+  margin-bottom: 4px;
+}
+
+.executing-indicator {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.dot {
+  width: 4px;
+  height: 4px;
+  background: var(--accent-green);
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+  
+  &:nth-child(2) { animation-delay: 0.5s; }
+  &:nth-child(3) { animation-delay: 1s; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* Command Suggestions */
+.command-suggestions {
+  position: absolute;
+  bottom: 60px;
+  left: 16px;
+  right: 16px;
+  background: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.suggestions-header {
+  padding: 8px 12px;
+  background: var(--tertiary-bg);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.suggestion-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  &:hover,
+  &.active {
+    background: var(--tertiary-bg);
+  }
+}
+
+.suggestion-command {
+  color: var(--accent-green);
+  font-weight: 500;
+  display: block;
+  font-size: 0.85rem;
+}
+
+.suggestion-description {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  margin-top: 2px;
+  display: block;
+}
+
+
+
+/* Scrollbar */
+.terminal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.terminal-body::-webkit-scrollbar-track {
+  background: var(--terminal-bg);
+}
+
+.terminal-body::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.terminal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-green);
+}
+
+/* Output Formatting */
+.output-line {
+  .text-green { color: var(--accent-green); }
+  .text-red { color: var(--accent-red); }
+  .text-blue { color: var(--accent-blue); }
+  .text-yellow { color: #ffbd2e; }
+  .text-cyan { color: #00ffff; }
+  .text-magenta { color: #ff00ff; }
+}

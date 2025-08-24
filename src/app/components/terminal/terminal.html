@@ -1,0 +1,75 @@
+<!-- Terminal Component -->
+<div class="terminal-container">
+  <!-- Terminal Body -->
+  <div class="terminal-body" #terminalBody>
+    <!-- Command History -->
+    <div class="command-history">
+      <div 
+        *ngFor="let cmd of commandHistory" 
+        class="command-entry"
+        [ngClass]="{'command': cmd.type === 'command', 'output': cmd.type === 'output', 'error': cmd.type === 'error'}">
+        
+        <!-- Command Line -->
+        <div *ngIf="cmd.command" class="command-line">
+          <pre>{{ cmd.command }}</pre>
+        </div>
+        
+        <!-- Output -->
+        <div *ngIf="cmd.output" class="output-line">
+          <pre [innerHTML]="formatOutput(cmd.output)"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Current Input Line -->
+    <div class="input-line" *ngIf="!isExecuting">
+      <div class="prompt-line">
+        <span class="prompt">┌──(kali㉿kali)-[{{ currentDirectory }}]</span>
+      </div>
+      <div class="command-line">
+        <span class="prompt-symbol">└─$ </span>
+        <input 
+          #commandInput
+          type="text" 
+          class="command-input"
+          [(ngModel)]="currentCommand"
+          (keydown)="onKeyDown($event)"
+          (keyup)="onKeyUp($event)"
+          placeholder=""
+          autocomplete="off"
+          spellcheck="false">
+      </div>
+    </div>
+
+    <!-- Executing Indicator -->
+    <div *ngIf="isExecuting" class="executing-line">
+      <div class="prompt-line">
+        <span class="prompt">┌──(kali㉿kali)-[{{ currentDirectory }}]</span>
+      </div>
+      <div class="command-line">
+        <span class="prompt-symbol">└─$ {{ lastCommand }}</span>
+        <div class="executing-indicator">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Command Suggestions -->
+  <div class="command-suggestions" *ngIf="showSuggestions && suggestions.length > 0">
+    <div class="suggestions-header">Command Suggestions:</div>
+    <div 
+      *ngFor="let suggestion of suggestions; let i = index" 
+      class="suggestion-item"
+      [class.active]="i === selectedSuggestionIndex"
+      (click)="selectSuggestion(suggestion)"
+      (mouseenter)="selectedSuggestionIndex = i">
+      <span class="suggestion-command">{{ suggestion.command }}</span>
+      <span class="suggestion-description">{{ suggestion.description }}</span>
+    </div>
+  </div>
+
+
+</div>
