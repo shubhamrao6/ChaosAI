@@ -18,3 +18,7 @@ The want only the frontend part of the application for now that will include the
 - Make fake functionalities and functions to simulate backend
 - Code should be modular and have good readibility with comments
 - The Name of the app for now is ChaosAI
+
+# 2) Backend Endpoints
+
+Now that we have the initial UI of the application, I want to create a REST API based backend for this application. Looking at all the current screens - Landing, Signup, Login, Dashboard, list out all the potential endpoints, their details, sample request and responses.
