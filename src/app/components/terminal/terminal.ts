@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked }
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TerminalService, TerminalCommand } from '../../services/terminal';
+import { AuthService } from '../../services/auth';
 import { Subscription } from 'rxjs';
 
 interface CommandSuggestion {
@@ -37,6 +38,7 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
   commandCount = 0;
   currentTime = '';
   currentDirectory = '~';
+  userName = 'kali';
   
   private subscription: Subscription = new Subscription();
   private timeInterval: any;
@@ -64,9 +66,16 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
     { command: 'searchsploit apache 2.4', description: 'Search for exploits' }
   ];
 
-  constructor(private terminalService: TerminalService) {}
+  constructor(
+    private terminalService: TerminalService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
+    // Set username from logged-in user
+    const user = this.authService.getCurrentUser();
+    this.userName = user?.firstName?.toLowerCase() || 'kali';
+    
     this.initializeTerminal();
     this.startClock();
     this.focusInput();

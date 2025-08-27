@@ -30,15 +30,27 @@
 
       <!-- Auth Form -->
       <form *ngIf="!isLoading" (ngSubmit)="onSubmit()" class="auth-form">
-        <!-- Username (Signup only) -->
+        <!-- First Name (Signup only) -->
         <div *ngIf="!isLoginMode" class="form-group">
-          <label class="form-label">Username</label>
+          <label class="form-label">First Name</label>
           <input 
             type="text" 
             class="form-input" 
-            [(ngModel)]="formData.username"
-            name="username"
-            placeholder="Enter your hacker alias"
+            [(ngModel)]="formData.firstName"
+            name="firstName"
+            placeholder="Enter your first name"
+            required>
+        </div>
+
+        <!-- Last Name (Signup only) -->
+        <div *ngIf="!isLoginMode" class="form-group">
+          <label class="form-label">Last Name</label>
+          <input 
+            type="text" 
+            class="form-input" 
+            [(ngModel)]="formData.lastName"
+            name="lastName"
+            placeholder="Enter your last name"
             required>
         </div>
 
@@ -98,18 +110,7 @@
         </div>
       </form>
 
-      <!-- Demo Credentials -->
-      <div *ngIf="isLoginMode" class="demo-info">
-        <h4 class="demo-title text-center mb-2">
-          <span class="text-green">Demo Access</span>
-        </h4>
 
-        <div class="demo-credentials">
-          <div class="demo-item" (click)="fillDemoCredentials('hacker')">
-            <strong>Hacker:</strong> hacker@chaosai.com
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- Terminal Preview -->

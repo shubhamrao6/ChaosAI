@@ -95,6 +95,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     // Load settings
     this.loadSettings();
+
+    // Setup token refresh monitoring
+    this.setupTokenRefresh();
   }
 
   private simulateLoading() {
@@ -257,6 +260,41 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Setup token refresh monitoring
+   */
+  private setupTokenRefresh(): void {
+    // Monitor authentication state
+    this.authService.currentUser$.subscribe(user => {
+      if (!user && this.currentUser) {
+        // User was logged out (token expired or manual logout)
+        this.router.navigate(['/auth']);
+      }
+    });
+  }
+
+  /**
+   * Manual token refresh for testing
+   */
+  refreshToken(): void {
+    this.activityStatus = 'Refreshing session...';
+    
+    this.authService.refreshToken().subscribe({
+      next: () => {
+        this.activityStatus = 'Session refreshed';
+        console.log('Token refreshed successfully');
+      },
+      error: (error) => {
+        this.activityStatus = 'Session refresh failed';
+        console.error('Token refresh failed:', error);
+        // Redirect to login if refresh fails
+        setTimeout(() => {
+          this.router.navigate(['/auth']);
+        }, 2000);
+      }
+    });
+  }
+
   startResize(event: MouseEvent) {
     // Implement panel resizing functionality
     event.preventDefault();
@@ -292,7 +330,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   logout() {
-    this.authService.logout();
-    this.router.navigate(['/']);
+    this.activityStatus = 'Logging out...';
+    
+    this.authService.logout().subscribe({
+      next: () => {
+        console.log('Logout successful');
+        this.router.navigate(['/']);
+      },
+      error: (error) => {
+        console.error('Logout error:', error);
+        // Navigate anyway since local data is cleared
+        this.router.navigate(['/']);
+      }
+    });
   }
 }

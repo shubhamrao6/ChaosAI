@@ -1,11 +1,14 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { ApiService, LoginResponse, SignupResponse } from './api';
 
 export interface User {
-  id: string;
+  userId: string;
   email: string;
-  username: string;
+  firstName: string;
+  lastName: string;
+  username?: string; // For backward compatibility
 }
 
 export interface LoginCredentials {
@@ -14,9 +17,10 @@ export interface LoginCredentials {
 }
 
 export interface SignupCredentials {
-  username: string;
   email: string;
   password: string;
+  firstName: string;
+  lastName: string;
 }
 
 @Injectable({
@@ -25,76 +29,158 @@ export interface SignupCredentials {
 export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
+  private tokenRefreshTimer: any;
 
-  // Fake user database
-  private users: User[] = [
-    { id: '1', email: 'admin@chaosai.com', username: 'admin' },
-    { id: '2', email: 'hacker@chaosai.com', username: 'hacker' }
-  ];
-
-  constructor() {
+  constructor(private apiService: ApiService) {
     // Check if user is already logged in
+    this.initializeAuth();
+  }
+
+  /**
+   * Initialize authentication state from stored tokens
+   */
+  private initializeAuth(): void {
     const savedUser = localStorage.getItem('chaosai_user');
-    if (savedUser) {
-      this.currentUserSubject.next(JSON.parse(savedUser));
+    if (savedUser && this.apiService.hasValidTokens()) {
+      try {
+        const user = JSON.parse(savedUser);
+        this.currentUserSubject.next(user);
+        this.startTokenRefreshTimer();
+      } catch (error) {
+        console.error('Error parsing saved user:', error);
+        this.clearAuthData();
+      }
     }
   }
 
+  /**
+   * User login with API integration
+   */
   login(credentials: LoginCredentials): Observable<User> {
-    // Simulate API call delay
-    return new Observable(observer => {
-      setTimeout(() => {
-        // Fake authentication - accept any email/password combination
-        const user = this.users.find(u => u.email === credentials.email) || {
-          id: Date.now().toString(),
-          email: credentials.email,
-          username: credentials.email.split('@')[0]
+    return this.apiService.login(credentials).pipe(
+      map((response: LoginResponse) => {
+        const user: User = {
+          userId: response.user.userId,
+          email: response.user.email,
+          firstName: response.user.firstName,
+          lastName: response.user.lastName,
+          username: response.user.email.split('@')[0] // For backward compatibility
         };
-
-        localStorage.setItem('chaosai_user', JSON.stringify(user));
+        
         this.currentUserSubject.next(user);
-        observer.next(user);
-        observer.complete();
-      }, 1000);
-    });
+        this.startTokenRefreshTimer();
+        return user;
+      }),
+      catchError(error => {
+        console.error('Login error:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
-  signup(credentials: SignupCredentials): Observable<User> {
-    // Simulate API call delay
-    return new Observable(observer => {
-      setTimeout(() => {
-        // Check if user already exists
-        const existingUser = this.users.find(u => u.email === credentials.email);
-        if (existingUser) {
-          observer.error({ message: 'User already exists' });
-          return;
-        }
-
-        const newUser: User = {
-          id: Date.now().toString(),
-          email: credentials.email,
-          username: credentials.username
-        };
-
-        this.users.push(newUser);
-        localStorage.setItem('chaosai_user', JSON.stringify(newUser));
-        this.currentUserSubject.next(newUser);
-        observer.next(newUser);
-        observer.complete();
-      }, 1000);
-    });
+  /**
+   * User signup with API integration
+   */
+  signup(credentials: SignupCredentials): Observable<SignupResponse> {
+    return this.apiService.signup(credentials).pipe(
+      catchError(error => {
+        console.error('Signup error:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
-  logout(): void {
-    localStorage.removeItem('chaosai_user');
-    this.currentUserSubject.next(null);
+  /**
+   * User logout with API integration
+   */
+  logout(): Observable<any> {
+    return this.apiService.logout().pipe(
+      map(() => {
+        this.clearAuthData();
+        return true;
+      }),
+      catchError(error => {
+        // Even if API call fails, clear local data
+        console.error('Logout error:', error);
+        this.clearAuthData();
+        return throwError(() => error);
+      })
+    );
   }
 
+  /**
+   * Refresh authentication token
+   */
+  refreshToken(): Observable<any> {
+    return this.apiService.refreshToken().pipe(
+      map(() => {
+        this.startTokenRefreshTimer();
+        return true;
+      }),
+      catchError(error => {
+        console.error('Token refresh error:', error);
+        this.clearAuthData();
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Check if user is authenticated
+   */
   isAuthenticated(): boolean {
-    return this.currentUserSubject.value !== null;
+    return this.currentUserSubject.value !== null && this.apiService.hasValidTokens();
   }
 
+  /**
+   * Get current user
+   */
   getCurrentUser(): User | null {
     return this.currentUserSubject.value;
+  }
+
+  /**
+   * Get access token
+   */
+  getAccessToken(): string | null {
+    return this.apiService.getAccessToken();
+  }
+
+  /**
+   * Get ID token
+   */
+  getIdToken(): string | null {
+    return this.apiService.getIdToken();
+  }
+
+  /**
+   * Start automatic token refresh timer
+   */
+  private startTokenRefreshTimer(): void {
+    // Clear existing timer
+    if (this.tokenRefreshTimer) {
+      clearTimeout(this.tokenRefreshTimer);
+    }
+
+    // Refresh token 5 minutes before expiry (assuming 1 hour expiry)
+    const refreshInterval = 55 * 60 * 1000; // 55 minutes in milliseconds
+    
+    this.tokenRefreshTimer = setTimeout(() => {
+      this.refreshToken().subscribe({
+        next: () => console.log('Token refreshed successfully'),
+        error: (error) => console.error('Auto token refresh failed:', error)
+      });
+    }, refreshInterval);
+  }
+
+  /**
+   * Clear all authentication data
+   */
+  private clearAuthData(): void {
+    this.currentUserSubject.next(null);
+    if (this.tokenRefreshTimer) {
+      clearTimeout(this.tokenRefreshTimer);
+      this.tokenRefreshTimer = null;
+    }
   }
 }

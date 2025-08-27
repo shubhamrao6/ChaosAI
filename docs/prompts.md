@@ -19,6 +19,20 @@ The want only the frontend part of the application for now that will include the
 - Code should be modular and have good readibility with comments
 - The Name of the app for now is ChaosAI
 
-# 2) Backend Endpoints
+# 2) New Chat
+Chect the Readme.md file to understand what this application is
+Check other files that seem necessary to understand how application is built and more context
 
-Now that we have the initial UI of the application, I want to create a REST API based backend for this application. Looking at all the current screens - Landing, Signup, Login, Dashboard, list out all the potential endpoints, their details, sample request and responses.
+# 3) API Integration
+The API Testing_Guide has few backend endpoints that I want to integrate. Fow now I want the following five auth endpoints to be integrated with the application:
+
+- Health Check (/health) -> Landing Page
+- User registration (/auth/signup) -> Signup page
+- User login (/auth/login) -> Signin page
+- Refresh Token (/auth/refresh) -> Dashboard
+- Logout (/auth/logout) -> Dashboard
+
+Keep in mind the following notes:
+- Make the code reusable, modular and with proper comments
+- Save the user login response i.e. the tokens for further use
+- No need to integrate any other endpoints for now

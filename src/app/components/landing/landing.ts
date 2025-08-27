@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { ApiService } from '../../services/api';
 
 interface Feature {
   icon: string;
@@ -21,6 +22,10 @@ interface Stat {
   styleUrl: './landing.scss'
 })
 export class LandingComponent implements OnInit {
+  
+  // API Status
+  apiStatus: 'checking' | 'healthy' | 'error' = 'checking';
+  apiMessage = 'Checking system status...';
   
   // Terminal animation lines
   terminalLines: string[] = [
@@ -82,14 +87,37 @@ export class LandingComponent implements OnInit {
     { number: '24/7', label: 'AI Assistance' }
   ];
 
+  constructor(private apiService: ApiService) {}
+
   ngOnInit() {
     // Start terminal animation
     this.animateTerminal();
+    
+    // Check API health
+    this.checkApiHealth();
   }
 
   private animateTerminal() {
     // Terminal lines are animated via CSS animation-delay
     // This method can be extended for more complex animations
+  }
+
+  /**
+   * Check API health status
+   */
+  private checkApiHealth(): void {
+    this.apiService.healthCheck().subscribe({
+      next: (response) => {
+        this.apiStatus = 'healthy';
+        this.apiMessage = `System operational - ${response.service}`;
+        console.log('API Health Check:', response);
+      },
+      error: (error) => {
+        this.apiStatus = 'error';
+        this.apiMessage = 'System offline - Demo mode active';
+        console.warn('API Health Check failed:', error);
+      }
+    });
   }
 
   scrollToFeatures() {

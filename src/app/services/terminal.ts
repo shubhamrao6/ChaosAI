@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { AuthService } from './auth';
 
 export interface TerminalCommand {
   command: string;
@@ -17,6 +18,7 @@ export class TerminalService {
 
   private currentDirectory = '/home/kali';
   private isConnected = false;
+  private userName = 'kali';
 
   // Fake command responses for demonstration
   private commandResponses: { [key: string]: string } = {
@@ -116,14 +118,18 @@ last opened session
 msf6 > `
   };
 
-  constructor() {
+  constructor(private authService: AuthService) {
+    // Set username first
+    const user = this.authService.getCurrentUser();
+    this.userName = user?.firstName?.toLowerCase() || 'kali';
+    
     this.initializeTerminal();
   }
 
   private initializeTerminal() {
     const welcomeMessage: TerminalCommand = {
       command: '',
-      output: `┌──(kali㉿kali)-[~]
+      output: `┌──(kali㉿${this.userName})-[~]
 └─$ Welcome to ChaosAI Terminal
 └─$ Connected to Kali Linux penetration testing environment
 └─$ Type 'help' for available commands`,
@@ -141,7 +147,7 @@ msf6 > `
       
       // Add command to history
       const commandEntry: TerminalCommand = {
-        command: `┌──(kali㉿kali)-[${this.currentDirectory}]
+        command: `┌──(kali㉿${this.userName})-[${this.currentDirectory}]
 └─$ ${trimmedCommand}`,
         output: '',
         timestamp: new Date(),

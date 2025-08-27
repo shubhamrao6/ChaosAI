@@ -24,7 +24,7 @@
     <!-- Current Input Line -->
     <div class="input-line" *ngIf="!isExecuting">
       <div class="prompt-line">
-        <span class="prompt">┌──(kali㉿kali)-[{{ currentDirectory }}]</span>
+        <span class="prompt">┌──(kali㉿{{ userName }})-[{{ currentDirectory }}]</span>
       </div>
       <div class="command-line">
         <span class="prompt-symbol">└─$ </span>
@@ -44,7 +44,7 @@
     <!-- Executing Indicator -->
     <div *ngIf="isExecuting" class="executing-line">
       <div class="prompt-line">
-        <span class="prompt">┌──(kali㉿kali)-[{{ currentDirectory }}]</span>
+        <span class="prompt">┌──(kali㉿{{ userName }})-[{{ currentDirectory }}]</span>
       </div>
       <div class="command-line">
         <span class="prompt-symbol">└─$ {{ lastCommand }}</span>

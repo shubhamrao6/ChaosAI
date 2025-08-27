@@ -18,7 +18,8 @@ export class AuthComponent {
   errorMessage = '';
 
   formData = {
-    username: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: ''
   };
@@ -75,7 +76,8 @@ export class AuthComponent {
   fillDemoCredentials(type: 'hacker') {
     this.formData.email = 'hacker@chaosai.com';
     this.formData.password = 'hacker123';
-    this.formData.username = 'hacker';
+    this.formData.firstName = 'Hacker';
+    this.formData.lastName = 'User';
   }
 
   onSubmit() {
@@ -116,22 +118,24 @@ export class AuthComponent {
 
   private signup() {
     const credentials: SignupCredentials = {
-      username: this.formData.username,
+      firstName: this.formData.firstName,
+      lastName: this.formData.lastName,
       email: this.formData.email,
       password: this.formData.password
     };
 
     this.authService.signup(credentials).subscribe({
-      next: (user) => {
-        console.log('Signup successful:', user);
-        this.router.navigate(['/dashboard']);
+      next: (response) => {
+        console.log('Signup successful:', response);
+        // After successful signup, automatically login
+        this.login();
       },
       error: (error) => {
         this.errorMessage = error.message || 'Signup failed. Please try again.';
         this.isLoading = false;
       },
       complete: () => {
-        this.isLoading = false;
+        // Keep loading state for auto-login
       }
     });
   }
@@ -142,14 +146,27 @@ export class AuthComponent {
       return false;
     }
 
-    if (!this.isLoginMode && !this.formData.username) {
-      this.errorMessage = 'Username is required for signup.';
+    if (!this.isLoginMode && (!this.formData.firstName || !this.formData.lastName)) {
+      this.errorMessage = 'First name and last name are required for signup.';
       return false;
     }
 
-    if (this.formData.password.length < 6) {
-      this.errorMessage = 'Password must be at least 6 characters long.';
+    if (this.formData.password.length < 8) {
+      this.errorMessage = 'Password must be at least 8 characters long.';
       return false;
+    }
+
+    // Validate password requirements for signup
+    if (!this.isLoginMode) {
+      const hasUppercase = /[A-Z]/.test(this.formData.password);
+      const hasLowercase = /[a-z]/.test(this.formData.password);
+      const hasNumbers = /\d/.test(this.formData.password);
+      const hasSymbols = /[!@#$%^&*(),.?":{}|<>]/.test(this.formData.password);
+      
+      if (!hasUppercase || !hasLowercase || !hasNumbers || !hasSymbols) {
+        this.errorMessage = 'Password must contain uppercase, lowercase, numbers, and symbols.';
+        return false;
+      }
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -163,7 +180,8 @@ export class AuthComponent {
 
   private resetForm() {
     this.formData = {
-      username: '',
+      firstName: '',
+      lastName: '',
       email: '',
       password: ''
     };

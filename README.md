@@ -42,6 +42,9 @@ A modern, dark-themed web application that simulates an AI-powered penetration t
 ## Technology Stack
 
 - **Frontend**: Angular 18 (Standalone Components)
+- **HTTP Client**: Angular HttpClient with interceptors
+- **Authentication**: JWT tokens with automatic refresh
+- **API Integration**: RESTful endpoints with error handling
 - **Styling**: SCSS with CSS Custom Properties
 - **Fonts**: Fira Code (monospace), Inter (sans-serif)
 - **Icons**: Unicode emojis for cross-platform compatibility
@@ -74,6 +77,18 @@ A modern, dark-themed web application that simulates an AI-powered penetration t
    ng build --prod
    ```
 
+## API Integration
+
+🔗 **Backend Integration**: The application now supports real API endpoints for authentication and user management.
+
+- **Health Check**: Monitors API availability on landing page
+- **User Registration**: Real signup with validation
+- **User Login**: JWT token-based authentication
+- **Token Refresh**: Automatic token renewal
+- **Secure Logout**: Server-side session invalidation
+
+See [API_INTEGRATION.md](API_INTEGRATION.md) for detailed setup instructions.
+
 ## Demo Credentials
 
 For quick testing, use these demo accounts:
@@ -81,6 +96,8 @@ For quick testing, use these demo accounts:
 - **Admin**: `admin@chaosai.com` / any password
 - **Hacker**: `hacker@chaosai.com` / any password
 - **Any email/password combination works for demo purposes**
+
+**Note**: When API is unavailable, the app automatically falls back to demo mode.
 
 ## Fake Terminal Commands
 
