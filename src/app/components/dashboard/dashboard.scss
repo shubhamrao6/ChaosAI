@@ -271,6 +271,15 @@
     background: var(--secondary-bg);
     color: var(--accent-color);
   }
+  
+  &.kill-btn {
+    color: var(--accent-red);
+    
+    &:hover {
+      background: var(--accent-red);
+      color: var(--primary-bg);
+    }
+  }
 }
 
 .panel-content {
@@ -345,7 +354,19 @@
   
   &.connected {
     background: var(--accent-color);
+    animation: pulse 2s infinite;
   }
+  
+  &.disconnected {
+    background: var(--accent-red);
+    animation: none;
+  }
+}
+
+.connection-error {
+  color: var(--accent-red);
+  font-size: 0.7rem;
+  font-style: italic;
 }
 
 .status-label {
