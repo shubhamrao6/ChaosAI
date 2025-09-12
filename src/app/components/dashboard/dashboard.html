@@ -61,12 +61,21 @@
           Terminal
         </div>
         <div class="panel-actions">
+          <button 
+            *ngIf="hasRunningJob()" 
+            class="panel-btn kill-btn" 
+            (click)="killCurrentJob()" 
+            title="Kill Process">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+            </svg>
+          </button>
           <button class="panel-btn" (click)="toggleTerminalFullscreen()" title="Fullscreen">
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M5,5H10V7H7V10H5V5M14,5H19V10H17V7H14V5M17,14H19V19H14V17H17V14M10,17V19H5V14H7V17H10Z" />
             </svg>
           </button>
-          <button class="panel-btn" (click)="restartTerminal()" title="Restart">
+          <button class="panel-btn" (click)="reconnectWebSocket()" title="Reconnect">
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M12,6V9L16,5L12,1V4A8,8 0 0,0 4,12C4,13.57 4.46,15.03 5.24,16.26L6.7,14.8C6.25,13.97 6,13 6,12A6,6 0 0,1 12,6M18.76,7.74L17.3,9.2C17.74,10.04 18,11 18,12A6,6 0 0,1 12,18V15L8,19L12,23V20A8,8 0 0,0 20,12C20,10.43 19.54,8.97 18.76,7.74Z" />
             </svg>
@@ -121,12 +130,13 @@
   <footer class="status-bar">
     <div class="status-left">
       <div class="status-item">
-        <span class="status-icon connected"></span>
-        Connected to Kali Linux
+        <span class="status-icon" [class]="isConnectedToKali ? 'connected' : 'disconnected'"></span>
+        {{ isConnectedToKali ? 'Connected to Kali Linux' : 'Disconnected from Kali Linux' }}
+        <span *ngIf="connectionError" class="connection-error"> ({{ connectionError }})</span>
       </div>
       <div class="status-item">
         <span class="status-label">Session:</span>
-        <span class="status-value">{{ sessionId }}</span>
+        <span class="status-value">{{ kaliSessionId ? kaliSessionId.substring(0, 8) + '...' : sessionId }}</span>
       </div>
       <div class="status-item">
         <span class="status-label">Target:</span>

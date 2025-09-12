@@ -127,7 +127,7 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
         event.preventDefault();
         if (this.showSuggestions && this.suggestions.length > 0) {
           this.selectSuggestion(this.suggestions[this.selectedSuggestionIndex]);
-        } else {
+        } else if (!this.isExecuting) {
           this.executeCommand();
         }
         break;
@@ -179,10 +179,12 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   private executeCommand() {
-    if (!this.currentCommand.trim()) {
+    if (!this.currentCommand.trim() || this.isExecuting) {
+      console.log('Command blocked - empty or already executing');
       return;
     }
 
+    console.log('Terminal component executing command:', this.currentCommand);
     this.lastCommand = this.currentCommand;
     this.isExecuting = true;
     this.hideSuggestions();
@@ -194,12 +196,14 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.subscription.add(
       this.terminalService.executeCommand(this.currentCommand).subscribe({
         next: (result) => {
-          // Command execution completed
+          console.log('Command execution result:', result);
         },
         error: (error) => {
           console.error('Command execution error:', error);
+          this.isExecuting = false;
         },
         complete: () => {
+          console.log('Command execution completed');
           this.isExecuting = false;
           this.currentCommand = '';
           this.currentDirectory = this.terminalService.getCurrentDirectory();
@@ -299,6 +303,18 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
   clearTerminal() {
     this.terminalService.clearHistory();
     this.focusInput();
+  }
+
+  killCurrentJob() {
+    this.terminalService.killCurrentJob();
+  }
+
+  hasRunningJob(): boolean {
+    return this.terminalService.hasRunningJob();
+  }
+
+  reconnectWebSocket() {
+    this.terminalService.reconnectWebSocket();
   }
 
   formatOutput(output: string): string {

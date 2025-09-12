@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService, User } from '../../services/auth';
+import { TerminalService } from '../../services/terminal';
 import { TerminalComponent } from '../terminal/terminal';
 import { ChatComponent } from '../chat/chat';
+import { Subscription } from 'rxjs';
 
 interface DashboardSettings {
   terminalFontSize: number;
@@ -43,6 +45,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   uptime = '00:00:00';
   currentTime = '';
   
+  // Connection Status
+  isConnectedToKali = false;
+  kaliSessionId = '';
+  connectionError = '';
+  
   // Settings
   settings: DashboardSettings = {
     terminalFontSize: 14,
@@ -53,6 +60,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private timeInterval: any;
   private sessionStartTime: Date = new Date();
+  private subscriptions = new Subscription();
   private loadingSteps = [
     'Initializing secure connection...',
     'Loading Kali Linux environment...',
@@ -63,7 +71,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private terminalService: TerminalService
   ) {}
 
   ngOnInit() {
@@ -74,6 +83,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.timeInterval) {
       clearInterval(this.timeInterval);
     }
+    this.subscriptions.unsubscribe();
   }
 
   private initializeDashboard() {
@@ -98,6 +108,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     // Setup token refresh monitoring
     this.setupTokenRefresh();
+    
+    // Setup WebSocket connection monitoring
+    this.setupConnectionMonitoring();
   }
 
   private simulateLoading() {
@@ -169,14 +182,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   executeCommandInTerminal(command: string) {
-    // This would integrate with the terminal component
-    // For now, just update activity status
     this.activityStatus = `Executing: ${command}`;
     this.commandCount++;
     
-    setTimeout(() => {
-      this.activityStatus = 'Command completed';
-    }, 3000);
+    this.subscriptions.add(
+      this.terminalService.executeCommand(command).subscribe({
+        complete: () => {
+          this.activityStatus = 'Command completed';
+        },
+        error: (error) => {
+          this.activityStatus = 'Command failed';
+          console.error('Command execution error:', error);
+        }
+      })
+    );
   }
 
   toggleFullscreen() {
@@ -202,11 +221,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  restartTerminal() {
-    this.activityStatus = 'Restarting terminal...';
-    setTimeout(() => {
-      this.activityStatus = 'Terminal restarted';
-    }, 2000);
+  reconnectWebSocket() {
+    this.activityStatus = 'Reconnecting to server...';
+    this.terminalService.reconnectWebSocket();
+  }
+
+  killCurrentJob() {
+    this.activityStatus = 'Killing process...';
+    this.terminalService.killCurrentJob();
+  }
+
+  hasRunningJob(): boolean {
+    return this.terminalService.hasRunningJob();
   }
 
   clearChat() {
@@ -327,6 +353,32 @@ export class DashboardComponent implements OnInit, OnDestroy {
     
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
+  }
+
+  private setupConnectionMonitoring() {
+    // Monitor WebSocket connection status
+    this.subscriptions.add(
+      this.terminalService.getConnectionStatus().subscribe(status => {
+        this.isConnectedToKali = status.connected;
+        this.kaliSessionId = status.sessionId || '';
+        this.connectionError = status.error || '';
+        
+        if (status.connected) {
+          this.activityStatus = 'Connected to Kali Linux';
+        } else if (status.error) {
+          this.activityStatus = `Connection error: ${status.error}`;
+        } else {
+          this.activityStatus = 'Disconnected from Kali Linux';
+        }
+      })
+    );
+    
+    // Monitor command history for count updates
+    this.subscriptions.add(
+      this.terminalService.commandHistory$.subscribe(history => {
+        this.commandCount = history.filter(cmd => cmd.type === 'command').length;
+      })
+    );
   }
 
   logout() {
