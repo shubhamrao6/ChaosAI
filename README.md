@@ -204,6 +204,20 @@ private aiResponses: { [key: string]: string[] } = {
 - Safari 14+
 - Edge 90+
 
+## GitHub Pages Deployment
+
+To deploy the application to GitHub Pages:
+
+```bash
+# Build with correct base href
+ng build --base-href "/ChaosAI/"
+
+# Deploy to GitHub Pages
+npx angular-cli-ghpages --dir=dist/ChaosAI-frontend/browser
+```
+
+The site will be available at: `https://yourusername.github.io/ChaosAI/`
+
 ## Contributing
 
 1. Fork the repository
