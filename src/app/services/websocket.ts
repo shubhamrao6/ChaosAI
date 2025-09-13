@@ -48,7 +48,7 @@ export class WebSocketService {
       this.ws.onopen = () => {
         console.log('WebSocket connected successfully');
         this.reconnectAttempts = 0;
-        this.connectionStatusSubject.next({ connected: true });
+        this.connectionStatusSubject.next({ connected: true, error: undefined });
       };
 
       this.ws.onmessage = (event) => {
@@ -146,6 +146,16 @@ export class WebSocketService {
     if (this.ws?.readyState === WebSocket.OPEN) {
       const message = {
         action: 'kill',
+        jobId: jobId
+      };
+      this.ws.send(JSON.stringify(message));
+    }
+  }
+
+  checkJobStatus(jobId: string): void {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      const message = {
+        action: 'status',
         jobId: jobId
       };
       this.ws.send(JSON.stringify(message));

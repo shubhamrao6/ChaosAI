@@ -79,6 +79,13 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.initializeTerminal();
     this.startClock();
     this.focusInput();
+    
+    // Monitor connection status for UI updates
+    this.subscription.add(
+      this.terminalService.getConnectionStatus().subscribe(status => {
+        this.isConnected = status.connected;
+      })
+    );
   }
 
   ngOnDestroy() {
@@ -92,7 +99,10 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   ngAfterViewChecked() {
-    this.scrollToBottom();
+    // Only auto-scroll when command is executing (response streaming)
+    if (this.isExecuting) {
+      this.scrollToBottom();
+    }
   }
 
   private initializeTerminal() {
@@ -192,26 +202,42 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
     // Add to command history cache
     this.commandHistoryCache.push(this.currentCommand);
     this.commandHistoryIndex = this.commandHistoryCache.length;
+    
+    // Clear current command immediately
+    this.currentCommand = '';
+
+    // Ensure lastCommand is set before executing
+    if (!this.lastCommand) {
+      console.error('No command to execute');
+      this.isExecuting = false;
+      this.focusInput();
+      return;
+    }
+    
+    console.log('Setting isExecuting to true for command:', this.lastCommand);
 
     this.subscription.add(
-      this.terminalService.executeCommand(this.currentCommand).subscribe({
+      this.terminalService.executeCommand(this.lastCommand).subscribe({
         next: (result) => {
           console.log('Command execution result:', result);
         },
         error: (error) => {
           console.error('Command execution error:', error);
           this.isExecuting = false;
+          this.currentDirectory = this.terminalService.getCurrentDirectory();
+          this.focusInput();
         },
         complete: () => {
           console.log('Command execution completed');
           this.isExecuting = false;
-          this.currentCommand = '';
           this.currentDirectory = this.terminalService.getCurrentDirectory();
           this.focusInput();
         }
       })
     );
   }
+
+
 
   private handleTabCompletion() {
     if (!this.currentCommand.trim()) {
@@ -335,6 +361,8 @@ export class TerminalComponent implements OnInit, OnDestroy, AfterViewChecked {
       }
     }, 100);
   }
+
+
 
   private scrollToBottom() {
     if (this.terminalBody) {

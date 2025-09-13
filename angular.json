@@ -61,10 +61,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "ChaosAI:build:production"
+              "buildTarget": "ChaosAI-frontend:build:production"
             },
             "development": {
-              "buildTarget": "ChaosAI:build:development"
+              "buildTarget": "ChaosAI-frontend:build:development"
             }
           },
           "defaultConfiguration": "development"

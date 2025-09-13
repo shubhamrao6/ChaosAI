@@ -21,8 +21,13 @@
       </div>
     </div>
 
-    <!-- Current Input Line -->
-    <div class="input-line" *ngIf="!isExecuting">
+    <!-- Process Running Indicator -->
+    <div *ngIf="isExecuting" class="process-indicator">
+      <span class="blinking-cursor">█</span>
+    </div>
+
+    <!-- Current Input Line - Only show when not executing and connected -->
+    <div class="input-line" *ngIf="!isExecuting && isConnected">
       <div class="prompt-line">
         <span class="prompt">┌──(kali㉿{{ userName }})-[{{ currentDirectory }}]</span>
       </div>
@@ -41,18 +46,14 @@
       </div>
     </div>
 
-    <!-- Executing Indicator -->
-    <div *ngIf="isExecuting" class="executing-line">
+    <!-- Disconnected State -->
+    <div *ngIf="!isExecuting && !isConnected" class="disconnected-line">
       <div class="prompt-line">
-        <span class="prompt">┌──(kali㉿{{ userName }})-[{{ currentDirectory }}]</span>
+        <span class="prompt text-red">┌──(disconnected)-[{{ currentDirectory }}]</span>
       </div>
       <div class="command-line">
-        <span class="prompt-symbol">└─$ {{ lastCommand }}</span>
-        <div class="executing-indicator">
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-        </div>
+        <span class="prompt-symbol text-red">└─$ </span>
+        <span class="text-red">Not connected to server. Use reconnect button to retry.</span>
       </div>
     </div>
   </div>

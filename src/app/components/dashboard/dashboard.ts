@@ -229,10 +229,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
   killCurrentJob() {
     this.activityStatus = 'Killing process...';
     this.terminalService.killCurrentJob();
+    // Reset status after a short delay
+    setTimeout(() => {
+      this.activityStatus = 'Process killed';
+    }, 1000);
   }
 
   hasRunningJob(): boolean {
     return this.terminalService.hasRunningJob();
+  }
+
+  checkJobStatus() {
+    this.activityStatus = 'Checking job status...';
+    this.terminalService.checkJobStatus();
   }
 
   clearChat() {
@@ -365,6 +374,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         
         if (status.connected) {
           this.activityStatus = 'Connected to Kali Linux';
+          // Clear any previous connection errors when reconnected
+          this.connectionError = '';
         } else if (status.error) {
           this.activityStatus = `Connection error: ${status.error}`;
         } else {

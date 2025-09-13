@@ -272,6 +272,15 @@
     color: var(--accent-color);
   }
   
+  &.status-btn {
+    color: #0080ff;
+    
+    &:hover {
+      background: rgba(0, 128, 255, 0.1);
+      color: #0080ff;
+    }
+  }
+  
   &.kill-btn {
     color: var(--accent-red);
     

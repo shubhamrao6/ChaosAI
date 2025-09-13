@@ -13,10 +13,13 @@
   flex: 1;
   padding: 16px;
   overflow-y: auto;
+  overflow-x: hidden;
   background: var(--terminal-bg);
   color: var(--terminal-text);
   font-size: 0.9rem;
   line-height: 1.4;
+  max-height: calc(100vh - 200px);
+  scroll-behavior: smooth;
 }
 
 .command-history {
@@ -191,6 +194,15 @@
   background: var(--accent-green);
 }
 
+/* Disconnected State */
+.disconnected-line {
+  margin-bottom: 4px;
+  
+  .text-red {
+    color: var(--accent-red);
+  }
+}
+
 /* Output Formatting */
 .output-line {
   .text-green { color: var(--accent-green); }
@@ -200,4 +212,29 @@
   .text-cyan { color: #00ffff; }
   .text-magenta { color: #ff00ff; }
 }
+
+/* Process Running Indicator */
+.process-indicator {
+  margin: 8px 0;
+  text-align: left;
+}
+
+.blinking-cursor {
+  color: var(--accent-green);
+  font-size: 0.9rem;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Global text color classes */
+.text-red { color: var(--accent-red); }
+.text-green { color: var(--accent-green); }
+.text-blue { color: var(--accent-blue); }
+.text-yellow { color: #ffbd2e; }
+.text-cyan { color: #00ffff; }
+.text-magenta { color: #ff00ff; }
 

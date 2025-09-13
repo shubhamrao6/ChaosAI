@@ -62,7 +62,7 @@ export class TerminalService {
       
       if (status.connected && status.sessionId) {
         this.addSystemMessage(`Connected to Kali Linux server (Session: ${status.sessionId.substring(0, 8)}...)`);
-      } else if (!status.connected && status.error) {
+      } else if (!status.connected && status.error && !status.error.includes('Reconnecting')) {
         this.addSystemMessage(`Connection failed: ${status.error}`);
       }
     });
@@ -88,6 +88,15 @@ export class TerminalService {
   private handleWebSocketMessage(message: WebSocketMessage) {
     console.log('Handling WebSocket message:', message);
     
+    // Handle status responses
+    if (message.status && message.jobId && !message.line && message.command) {
+      this.addSystemMessage(`Job ${message.jobId.substring(0, 8)}: ${message.status} - ${message.command}`);
+      if (message.exitCode !== undefined) {
+        this.addSystemMessage(`Exit code: ${message.exitCode}`);
+      }
+      return;
+    }
+    
     if (message.jobId === this.currentJobId) {
       if (message.line) {
         console.log('Adding output line to terminal:', message.line);
@@ -103,13 +112,8 @@ export class TerminalService {
         this.commandHistorySubject.next([...currentHistory, outputEntry]);
       }
       
-      if (message.status === 'done' || message.status === 'killed') {
-        console.log('Job finished, clearing currentJobId');
-        this.currentJobId = null;
-        if (message.exitCode !== undefined && message.exitCode !== 0) {
-          this.addSystemMessage(`Command exited with code: ${message.exitCode}`);
-        }
-      }
+      // Don't clear currentJobId here - let executeRemoteCommand handle it
+      // This prevents race conditions with job completion
     }
   }
 
@@ -125,18 +129,6 @@ export class TerminalService {
         observer.complete();
         return;
       }
-      
-      // Add command to history
-      const commandEntry: TerminalCommand = {
-        command: `┌──(kali㉿${this.userName})-[${this.currentDirectory}]
-└─$ ${trimmedCommand}`,
-        output: '',
-        timestamp: new Date(),
-        type: 'command'
-      };
-
-      const currentHistory = this.commandHistorySubject.value;
-      this.commandHistorySubject.next([...currentHistory, commandEntry]);
 
       // Handle special commands
       if (trimmedCommand === 'clear') {
@@ -153,6 +145,18 @@ export class TerminalService {
         return;
       }
 
+      // Add command to history only when actually executing
+      const commandEntry: TerminalCommand = {
+        command: `┌──(kali㉿${this.userName})-[${this.currentDirectory}]
+└─$ ${trimmedCommand}`,
+        output: '',
+        timestamp: new Date(),
+        type: 'command'
+      };
+
+      const currentHistory = this.commandHistorySubject.value;
+      this.commandHistorySubject.next([...currentHistory, commandEntry]);
+
       // Execute command on remote server
       if (this.webSocketService.isConnected()) {
         console.log('Executing on remote server');
@@ -165,6 +169,14 @@ export class TerminalService {
     });
   }
 
+  private readonly OUTPUT_PROCESSING_DELAY = 100; // Configurable delay for output processing
+  private readonly COMMAND_TIMEOUT = 30000; // 30 second timeout for commands
+
+  /**
+   * Executes a command on the remote server via WebSocket
+   * @param command - The command to execute
+   * @param observer - The observable observer to notify of completion
+   */
   private executeRemoteCommand(command: string, observer: any) {
     console.log('Starting remote command execution:', command);
     
@@ -178,7 +190,8 @@ export class TerminalService {
       if (message.status === 'started' && message.jobId && message.command === command) {
         console.log('Job started:', message.jobId);
         this.currentJobId = message.jobId;
-        this.addSystemMessage(`Job started: ${message.jobId.substring(0, 8)}`);
+        // System messages for job start are omitted to reduce terminal noise
+        // and improve user experience by showing only command output
       } else if (message.jobId === this.currentJobId) {
         if (message.status === 'running' && message.line) {
           console.log('Received output line:', message.line);
@@ -188,14 +201,14 @@ export class TerminalService {
           // Error output streaming - already handled in handleWebSocketMessage  
         } else if (message.status === 'done') {
           console.log('Job completed:', message.exitCode);
-          if (message.exitCode !== undefined) {
-            this.addSystemMessage(`Command completed with exit code: ${message.exitCode}`);
-          } else {
-            this.addSystemMessage('Command completed successfully');
-          }
-          this.currentJobId = null;
-          messageSubscription.unsubscribe();
-          observer.complete();
+          // Add configurable delay to ensure all output is processed before completion
+          // This prevents race conditions where the terminal state is reset before
+          // all output lines have been displayed to the user
+          setTimeout(() => {
+            this.currentJobId = null;
+            messageSubscription.unsubscribe();
+            observer.complete();
+          }, this.OUTPUT_PROCESSING_DELAY);
         } else if (message.status === 'killed') {
           console.log('Job was killed');
           this.addSystemMessage('Command was killed');
@@ -215,13 +228,13 @@ export class TerminalService {
     // Set a timeout to prevent hanging
     const timeoutId = setTimeout(() => {
       if (messageSubscription && !messageSubscription.closed) {
-        console.log('Command execution timeout after 30 seconds');
+        console.log(`Command execution timeout after ${this.COMMAND_TIMEOUT / 1000} seconds`);
         this.addSystemMessage('Command execution timeout');
         this.currentJobId = null;
         messageSubscription.unsubscribe();
         observer.complete();
       }
-    }, 30000); // 30 second timeout
+    }, this.COMMAND_TIMEOUT);
     
     // Clear timeout when subscription completes
     messageSubscription.add(() => {
@@ -259,6 +272,15 @@ export class TerminalService {
 
   hasRunningJob(): boolean {
     return this.currentJobId !== null;
+  }
+
+  checkJobStatus(): void {
+    if (this.currentJobId) {
+      console.log('Checking status for job:', this.currentJobId);
+      this.webSocketService.checkJobStatus(this.currentJobId);
+    } else {
+      this.addSystemMessage('No running job to check');
+    }
   }
 
   reconnectWebSocket(): void {

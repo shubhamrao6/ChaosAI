@@ -45,6 +45,7 @@ A modern, dark-themed web application that simulates an AI-powered penetration t
 - **HTTP Client**: Angular HttpClient with interceptors
 - **Authentication**: JWT tokens with automatic refresh
 - **API Integration**: RESTful endpoints with error handling
+- **Terminal Integration**: WebSocket connection to live Kali Linux server (`ws://40.76.252.88:8765/ws`)
 - **Styling**: SCSS with CSS Custom Properties
 - **Fonts**: Fira Code (monospace), Inter (sans-serif)
 - **Icons**: Unicode emojis for cross-platform compatibility
