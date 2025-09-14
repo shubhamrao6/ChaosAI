@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService, User } from '../../services/auth';
 import { TerminalService } from '../../services/terminal';
+import { ChatService } from '../../services/chat';
 import { TerminalComponent } from '../terminal/terminal';
 import { ChatComponent } from '../chat/chat';
 import { Subscription } from 'rxjs';
@@ -72,11 +73,53 @@ export class DashboardComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private terminalService: TerminalService
+    private terminalService: TerminalService,
+    private chatService: ChatService
   ) {}
+
+  showScrollToBottom = false;
+  isConnected = false;
+  showUserMenu = false;
+
+  scrollToBottom() {
+    // Delegate to chat component
+    const chatComponent = document.querySelector('app-chat');
+    if (chatComponent) {
+      (chatComponent as any).scrollToBottom();
+    }
+  }
 
   ngOnInit() {
     this.initializeDashboard();
+    // Subscribe to chat connection state
+    this.subscriptions.add(
+      this.chatService.isConnected$.subscribe(connected => {
+        this.isConnected = connected;
+      })
+    );
+    
+    // Subscribe to chat scroll state
+    this.subscriptions.add(
+      this.chatService.hasMoreHistory$.subscribe(() => {
+        // Update scroll button visibility based on chat state
+        setTimeout(() => {
+          const chatMessages = document.querySelector('.chat-messages');
+          if (chatMessages) {
+            const element = chatMessages as HTMLElement;
+            const threshold = 50;
+            this.showScrollToBottom = element.scrollTop + element.clientHeight < element.scrollHeight - threshold;
+          }
+        }, 100);
+      })
+    );
+    
+    // Close user menu when clicking outside
+    document.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.user-menu-container')) {
+        this.showUserMenu = false;
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -245,7 +288,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   clearChat() {
-    this.activityStatus = 'Chat cleared';
+    this.chatService.clearConversation();
+    this.activityStatus = 'Chat history cleared';
+  }
+
+  toggleUserMenu() {
+    this.showUserMenu = !this.showUserMenu;
   }
 
   showSettings() {

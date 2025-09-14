@@ -2,6 +2,16 @@
 <div class="chat-container">
   <!-- Chat Messages -->
   <div class="chat-messages" #chatMessages (scroll)="onScroll()">
+    <!-- Load More History Button -->
+    <div class="load-more-container" *ngIf="hasMoreHistory">
+      <button class="load-more-btn" (click)="loadOlderMessages()">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M7.41,15.41L12,10.83L16.59,15.41L18,14L12,8L6,14L7.41,15.41Z" />
+        </svg>
+        Fetch last 10 messages
+      </button>
+    </div>
+    
     <div 
       *ngFor="let message of messages; let i = index" 
       class="message-wrapper"
@@ -45,9 +55,6 @@
     <!-- Typing Indicator -->
     <div *ngIf="isTyping" class="typing-indicator">
       <div class="typing-bubble">
-        <svg class="sender-avatar" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M17.753,14A2.25,2.25 0 0,1 20,16.25C20,17.217 19.217,18 18.25,18H6.083A4.502,4.502 0 0,1 1.581,13.498A4.5,4.5 0 0,1 6.083,9H7.75A2.25,2.25 0 0,1 10,11.25A2.25,2.25 0 0,1 7.75,13.5H6.083A1.5,1.5 0 0,0 4.583,15A1.5,1.5 0 0,0 6.083,16.5H18.25A0.75,0.75 0 0,0 19,15.75A0.75,0.75 0 0,0 18.25,15H17.753Z" />
-        </svg>
         <div class="typing-dots">
           <span class="dot"></span>
           <span class="dot"></span>
@@ -55,6 +62,16 @@
         </div>
       </div>
     </div>
+
+  </div>
+
+  <!-- Scroll to Bottom Button -->
+  <div class="scroll-to-bottom-container" *ngIf="showScrollToBottom">
+    <button class="scroll-to-bottom-btn" (click)="scrollToBottom()" title="Scroll to bottom">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+      </svg>
+    </button>
   </div>
 
   <!-- Chat Input -->
@@ -98,13 +115,10 @@
 
       </div>
       <div class="controls-right">
-        <select [(ngModel)]="selectedModel" class="model-dropdown">
-          <option value="" disabled>Select Model</option>
-          <option value="gpt-4">GPT-4</option>
-          <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-          <option value="claude-3">Claude 3</option>
-          <option value="gemini-pro">Gemini Pro</option>
-          <option value="llama-2">Llama 2</option>
+        <select [(ngModel)]="selectedModel" (change)="onModelChange()" class="model-dropdown">
+          <option *ngFor="let model of availableModels" [ngValue]="model">
+            {{ model.name }}{{ model.tier === 'premium' ? ' (Premium)' : '' }}
+          </option>
         </select>
         <span class="char-counter" [class.warning]="currentMessage.length > 1800">
           {{ currentMessage.length }}/2000

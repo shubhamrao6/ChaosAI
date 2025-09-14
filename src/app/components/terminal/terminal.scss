@@ -182,15 +182,19 @@
 }
 
 .terminal-body::-webkit-scrollbar-track {
-  background: var(--terminal-bg);
+  background: transparent;
 }
 
 .terminal-body::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background: transparent;
   border-radius: 3px;
 }
 
-.terminal-body::-webkit-scrollbar-thumb:hover {
+.terminal-body:hover::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+}
+
+.terminal-body:hover::-webkit-scrollbar-thumb:hover {
   background: var(--accent-green);
 }
 
