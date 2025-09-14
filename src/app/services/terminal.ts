@@ -199,8 +199,8 @@ export class TerminalService {
         } else if (message.status === 'error' && message.line) {
           console.log('Received error line:', message.line);
           // Error output streaming - already handled in handleWebSocketMessage  
-        } else if (message.status === 'done') {
-          console.log('Job completed:', message.exitCode);
+        } else if (message.status === 'done' || message.status === 'error') {
+          console.log('Job completed:', message.exitCode || 'with error');
           // Add configurable delay to ensure all output is processed before completion
           // This prevents race conditions where the terminal state is reset before
           // all output lines have been displayed to the user

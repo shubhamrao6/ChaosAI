@@ -226,6 +226,39 @@ Open `index.html` in your browser - it's already configured to connect to the Az
 
 ---
 
-👉 Next step could be persisting this job table in **SQLite or DynamoDB** so jobs survive restarts.
+---
 
-Do you want me to **extend this server with persistence (SQLite)** so you can test long jobs and still query their status later, even after restarting the WebSocket server?
+# 🌐 AWS API Gateway Proxy
+
+**WebSocket URL**: `wss://8y1lp0w0zb.execute-api.us-east-1.amazonaws.com/prod`
+
+## 🧪 Test with Postman
+
+1. **Create WebSocket Request**:
+   - New → WebSocket Request
+   - URL: `wss://8y1lp0w0zb.execute-api.us-east-1.amazonaws.com/prod`
+   - Click "Connect"
+
+2. **Send Commands**:
+   ```json
+   {"action":"run","command":"pwd"}
+   ```
+   ```json
+   {"action":"run","command":"ping -c 3 google.com"}
+   ```
+   ```json
+   {"action":"status","jobId":"<job-id-from-response>"}
+   ```
+   ```json
+   {"action":"kill","jobId":"<job-id-from-response>"}
+   ```
+
+3. **Expected Responses**:
+   - Connection: `{"sessionId":"...","status":"connected"}`
+   - Job started: `{"jobId":"...","status":"started","command":"..."}`
+   - Real-time output: `{"jobId":"...","status":"running","line":"..."}`
+   - Job completed: `{"jobId":"...","status":"done","exitCode":0}`
+
+---
+
+👉 Next step could be persisting this job table in **SQLite or DynamoDB** so jobs survive restarts.

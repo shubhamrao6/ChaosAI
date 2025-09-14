@@ -22,7 +22,7 @@ export interface ConnectionStatus {
 })
 export class WebSocketService {
   private ws: WebSocket | null = null;
-  private readonly serverUrl = 'ws://40.76.252.88:8765/ws';
+  private readonly serverUrl = 'wss://8y1lp0w0zb.execute-api.us-east-1.amazonaws.com/prod';
   
   private connectionStatusSubject = new BehaviorSubject<ConnectionStatus>({ connected: false });
   public connectionStatus$ = this.connectionStatusSubject.asObservable();
