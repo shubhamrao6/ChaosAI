@@ -104,6 +104,7 @@
       box-shadow: 0 2px 8px rgba(var(--accent-red), 0.3);
       font-weight: 500;
       border: none;
+      max-width: 100%;
     }
   }
   
@@ -127,6 +128,10 @@
   position: relative;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.message-wrapper.ai .message-bubble {
+  max-width: 100%;
 }
 
 .message-header {
@@ -567,63 +572,188 @@
   }
 }
 
-/* Markdown formatting in messages */
+/* Markdown formatting for ngx-markdown */
 .message-content {
-  .inline-code {
-    background: rgba(var(--accent-red), 0.1);
-    color: var(--accent-red);
-    padding: 2px 4px;
-    border-radius: 3px;
-    font-family: 'Fira Code', monospace;
-    font-size: 0.85em;
-  }
-  
-  .code-block {
-    background: var(--primary-bg);
-    border: 1px solid rgba(var(--accent-red), 0.2);
-    border-radius: 6px;
-    padding: 8px;
-    margin: 8px 0;
-    overflow-x: auto;
+  ::ng-deep {
+    /* Headings */
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--accent-red);
+      margin: 8px 0 4px 0;
+      font-weight: 600;
+    }
     
+    h1 { font-size: 1.2em; }
+    h2 { font-size: 1.1em; }
+    h3 { font-size: 1.05em; }
+    h4 { font-size: 1em; }
+    h5 { font-size: 0.95em; }
+    h6 { font-size: 0.9em; }
+    
+    /* Inline code */
     code {
+      background: rgba(var(--accent-red), 0.1);
+      color: var(--accent-red);
+      padding: 2px 4px;
+      border-radius: 3px;
       font-family: 'Fira Code', monospace;
-      color: var(--terminal-text);
       font-size: 0.85em;
     }
-  }
-  
-  .msg-h1, .msg-h2, .msg-h3 {
-    color: var(--accent-red);
-    margin: 8px 0 4px 0;
-    font-weight: 600;
-  }
-  
-  .msg-h1 { font-size: 1.2em; }
-  .msg-h2 { font-size: 1.1em; }
-  .msg-h3 { font-size: 1.05em; }
-  
-  .msg-ul {
-    margin: 4px 0;
-    padding-left: 16px;
-  }
-  
-  .msg-li {
-    margin: 2px 0;
-    list-style-type: disc;
-  }
-  
-  .msg-link {
-    color: var(--accent-red);
-    text-decoration: underline;
     
-    &:hover {
-      color: #ff6b8a;
+    /* Code blocks */
+    pre {
+      background: var(--primary-bg);
+      border: 1px solid rgba(var(--accent-red), 0.2);
+      border-radius: 6px;
+      padding: 8px;
+      margin: 8px 0;
+      overflow-x: auto;
+      
+      code {
+        background: transparent;
+        color: var(--terminal-text);
+        padding: 0;
+        font-family: 'Fira Code', monospace;
+        font-size: 0.85em;
+      }
+    }
+    
+    /* Lists */
+    ul, ol {
+      margin: 4px 0;
+      padding-left: 16px;
+    }
+    
+    li {
+      margin: 2px 0;
+    }
+    
+    /* Links */
+    a {
+      color: var(--accent-red);
+      text-decoration: underline;
+      
+      &:hover {
+        color: #ff6b8a;
+      }
+    }
+    
+    /* Blockquotes */
+    blockquote {
+      border-left: 3px solid var(--accent-red);
+      margin: 8px 0;
+      padding: 4px 0 4px 12px;
+      background: rgba(var(--accent-red), 0.05);
+      font-style: italic;
+    }
+    
+    /* Tables */
+    table {
+      border-collapse: collapse;
+      margin: 8px 0;
+      width: 100%;
+    }
+    
+    th, td {
+      border: 1px solid rgba(var(--accent-red), 0.2);
+      padding: 4px 8px;
+      text-align: left;
+    }
+    
+    th {
+      background: rgba(var(--accent-red), 0.1);
+      font-weight: 600;
+    }
+    
+    /* Horizontal rule */
+    hr {
+      border: none;
+      border-top: 1px solid rgba(var(--accent-red), 0.3);
+      margin: 12px 0;
+    }
+    
+    /* Strong and emphasis */
+    strong {
+      font-weight: 600;
+      color: var(--accent-red);
+    }
+    
+    em {
+      font-style: italic;
+      color: var(--text-secondary);
+    }
+    
+    /* Paragraphs */
+    p {
+      margin: 4px 0;
+      line-height: 1.5;
     }
   }
+}
+
+/* Command Button */
+::ng-deep .command-container {
+  margin: 8px 0;
+  display: block;
+}
+
+::ng-deep .command-btn {
+  background: linear-gradient(135deg, #00ff41, #00cc33);
+  color: #0a0a0a;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-block;
+  transition: all 0.2s ease;
+}
+
+::ng-deep .command-btn:hover {
+  background: linear-gradient(135deg, #00cc33, #00ff41);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 255, 65, 0.3);
+}
+
+::ng-deep .command-btn:active {
+  transform: translateY(0);
+}
+
+/* Command Action Buttons */
+.command-actions {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.command-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent-color);
+  border: none;
+  color: #000000;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-family: 'Fira Code', monospace;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   
-  .msg-ip {
-    color: var(--accent-green);
-    font-family: 'Fira Code', monospace;
+  &:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  &:active {
+    transform: translateY(0);
+    filter: brightness(0.9);
   }
 }

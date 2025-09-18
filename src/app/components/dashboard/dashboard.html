@@ -17,8 +17,14 @@
           class="target-input"
           [(ngModel)]="currentTarget"
           placeholder="192.168.1.1 or example.com"
+          [disabled]="isTargetSet"
           (keydown.enter)="setTarget()">
-        <button class="set-target-btn" (click)="setTarget()">Set</button>
+        <button 
+          class="set-target-btn" 
+          [class.clear-btn]="isTargetSet"
+          (click)="setTarget()">
+          {{ isTargetSet ? 'Clear' : 'Set' }}
+        </button>
       </div>
     </div>
 
@@ -135,7 +141,7 @@
         </div>
       </div>
       <div class="panel-content">
-        <app-chat (executeCommandEvent)="executeCommandInTerminal($event)"></app-chat>
+        <app-chat (executeCommandEvent)="executeCommandInTerminal($event)" [targetHost]="targetHost"></app-chat>
       </div>
     </div>
   </main>

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { AuthService } from './auth';
+import { SystemPrompts } from './system-prompts';
 
 export interface ChatMessage {
   id: string;
@@ -275,7 +276,7 @@ export class ChatService {
     this.currentStreamingId = '';
   }
 
-  sendMessage(message: string, modelId: string = 'basic', provider: 'aws' | 'azure' = 'aws'): void {
+  sendMessage(message: string, modelId: string = 'basic', provider: 'aws' | 'azure' = 'aws', targetHost?: string): void {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       console.error('Chat WebSocket not connected');
       return;
@@ -294,12 +295,21 @@ export class ChatService {
     this.messagesSubject.next([...currentMessages, userMessage]);
 
     // Send to server
+    const hasTarget = !!targetHost;
+    const systemPrompt = hasTarget 
+      ? SystemPrompts.getSystemPrompt(true) + `\n\nCurrent target: ${targetHost}`
+      : SystemPrompts.getSystemPrompt(false);
+    
     const payload = {
       action: 'sendMessage',
       question: message,
+      system_prompt: systemPrompt,
       model_id: modelId,
       provider: provider
     };
+
+    console.log('System Prompt:', systemPrompt);
+    console.log('Message Payload:', payload);
 
     this.ws.send(JSON.stringify(payload));
   }

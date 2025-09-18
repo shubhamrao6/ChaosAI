@@ -22,7 +22,20 @@
 
         <!-- Message Content -->
         <div class="message-content">
-          <div *ngIf="message.type === 'text'" [innerHTML]="formatMessage(message.content)"></div>
+          <div *ngIf="message.type === 'text'">
+            <markdown [data]="message.content"></markdown>
+            
+            <!-- Command buttons -->
+            <div *ngIf="message.sender === 'ai' && extractCommands(message.content).length > 0" class="command-actions">
+              <button 
+                *ngFor="let command of extractCommands(message.content)" 
+                class="command-action-btn" 
+                (click)="executeCommand(command)"
+                [title]="'Execute: ' + command">
+                {{ command }}
+              </button>
+            </div>
+          </div>
           
           <div *ngIf="message.type === 'command'" class="command-suggestion">
             <div class="command-header">
@@ -44,7 +57,20 @@
               </svg>
               Analysis Result:
             </div>
-            <div class="analysis-content" [innerHTML]="formatMessage(message.content)"></div>
+            <div class="analysis-content">
+              <markdown [data]="message.content"></markdown>
+              
+              <!-- Command buttons -->
+              <div *ngIf="extractCommands(message.content).length > 0" class="command-actions">
+                <button 
+                  *ngFor="let command of extractCommands(message.content)" 
+                  class="command-action-btn" 
+                  (click)="executeCommand(command)"
+                  [title]="'Execute: ' + command">
+                  {{ command }}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 

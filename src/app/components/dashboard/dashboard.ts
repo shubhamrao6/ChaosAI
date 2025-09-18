@@ -28,6 +28,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   sessionId = '';
   currentTarget = '';
   targetHost = '';
+  isTargetSet = false;
   
   // UI State
   isLoading = true;
@@ -213,32 +214,47 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   setTarget() {
-    if (this.currentTarget.trim()) {
+    if (!this.isTargetSet && this.currentTarget.trim()) {
       this.targetHost = this.currentTarget.trim();
+      this.isTargetSet = true;
       this.activityStatus = `Targeting ${this.targetHost}`;
       
       // Simulate target validation
       setTimeout(() => {
         this.activityStatus = 'Target set - Ready for scanning';
       }, 2000);
+    } else if (this.isTargetSet) {
+      // Clear target
+      this.currentTarget = '';
+      this.targetHost = '';
+      this.isTargetSet = false;
+      this.activityStatus = 'Target cleared';
     }
   }
 
   executeCommandInTerminal(command: string) {
     this.activityStatus = `Executing: ${command}`;
-    this.commandCount++;
     
-    this.subscriptions.add(
-      this.terminalService.executeCommand(command).subscribe({
-        complete: () => {
-          this.activityStatus = 'Command completed';
-        },
-        error: (error) => {
-          this.activityStatus = 'Command failed';
-          console.error('Command execution error:', error);
-        }
-      })
-    );
+    // Find terminal input and simulate typing the command
+    const terminalInput = document.querySelector('.command-input') as HTMLInputElement;
+    if (terminalInput) {
+      // Set the command in the input
+      terminalInput.value = command;
+      terminalInput.dispatchEvent(new Event('input'));
+      
+      // Trigger Enter key press to execute
+      setTimeout(() => {
+        const enterEvent = new KeyboardEvent('keydown', {
+          key: 'Enter',
+          code: 'Enter',
+          keyCode: 13,
+          which: 13,
+          bubbles: true
+        });
+        terminalInput.dispatchEvent(enterEvent);
+        terminalInput.focus();
+      }, 100);
+    }
   }
 
   toggleFullscreen() {

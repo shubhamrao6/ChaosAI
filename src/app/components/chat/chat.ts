@@ -1,6 +1,7 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, Output, EventEmitter, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MarkdownModule } from 'ngx-markdown';
 import { ChatService, ChatMessage, ChatModel } from '../../services/chat';
 import { Subscription } from 'rxjs';
 
@@ -13,14 +14,15 @@ interface QuickAction {
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MarkdownModule],
   templateUrl: './chat.html',
   styleUrl: './chat.scss'
 })
-export class ChatComponent implements OnInit, OnDestroy {
+export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('chatMessages') chatMessages!: ElementRef;
   @ViewChild('messageInput') messageInput!: ElementRef;
   @Output() executeCommandEvent = new EventEmitter<string>();
+  @Input() targetHost = '';
 
   messages: ChatMessage[] = [];
   currentMessage = '';
@@ -42,17 +44,53 @@ export class ChatComponent implements OnInit, OnDestroy {
     { icon: '🔧', text: 'Troubleshoot', action: 'troubleshoot' }
   ];
 
-
-
   constructor(private chatService: ChatService) {
     this.availableModels = this.chatService.availableModels;
-    this.selectedModel = this.availableModels[0]; // Default to first model
+    this.selectedModel = this.availableModels.find(m => m.name === 'GPT-4o Mini') || this.availableModels[0];
   }
 
   ngOnInit() {
     this.setupSubscriptions();
     console.log('Chat component initializing...');
     this.chatService.connect();
+  }
+  
+  ngAfterViewInit() {
+    // Set up click delegation for command buttons
+    this.chatMessages.nativeElement.addEventListener('click', (event: Event) => {
+      const target = event.target as HTMLElement;
+      console.log('Click detected on:', target.className, target.getAttribute('data-command'));
+      if (target.classList.contains('command-btn')) {
+        const command = target.getAttribute('data-command');
+        if (command) {
+          console.log('Executing command:', command);
+          this.executeCommand(command);
+        }
+      }
+    });
+    
+    // Also set up MutationObserver to catch dynamically added buttons
+    const observer = new MutationObserver(() => {
+      const buttons = this.chatMessages.nativeElement.querySelectorAll('.command-btn');
+      buttons.forEach((btn: HTMLElement) => {
+        if (!btn.dataset['listenerAdded']) {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const command = btn.getAttribute('data-command');
+            if (command) {
+              console.log('Button click - executing:', command);
+              this.executeCommand(command);
+            }
+          });
+          btn.dataset['listenerAdded'] = 'true';
+        }
+      });
+    });
+    
+    observer.observe(this.chatMessages.nativeElement, {
+      childList: true,
+      subtree: true
+    });
   }
 
   ngOnDestroy() {
@@ -97,8 +135,6 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
   }
 
-
-
   onKeyDown(event: KeyboardEvent) {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
@@ -129,7 +165,8 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.chatService.sendMessage(
       messageContent,
       this.selectedModel.id,
-      this.selectedModel.provider
+      this.selectedModel.provider,
+      this.targetHost
     );
   }
 
@@ -142,7 +179,8 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.chatService.sendMessage(
       action.text,
       this.selectedModel.id,
-      this.selectedModel.provider
+      this.selectedModel.provider,
+      this.targetHost
     );
   }
 
@@ -161,8 +199,6 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.messages.push(modelChangeMessage);
     this.autoScrollToBottom();
   }
-
-
 
   executeCommand(command: string) {
     // Emit event to parent component (dashboard) to execute command in terminal
@@ -209,21 +245,14 @@ export class ChatComponent implements OnInit, OnDestroy {
     return Date.now().toString() + Math.random().toString(36).substr(2, 9);
   }
 
-  formatMessage(content: string): string {
-    // Format message content with markdown formatting
-    return content
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
-      .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
-      .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>') // Inline code
-      .replace(/```([\s\S]*?)```/g, '<pre class="code-block"><code>$1</code></pre>') // Code blocks
-      .replace(/^### (.*$)/gm, '<h3 class="msg-h3">$1</h3>') // H3
-      .replace(/^## (.*$)/gm, '<h2 class="msg-h2">$1</h2>') // H2
-      .replace(/^# (.*$)/gm, '<h1 class="msg-h1">$1</h1>') // H1
-      .replace(/^- (.*$)/gm, '<li class="msg-li">$1</li>') // List items
-      .replace(/(<li[^>]*>.*<\/li>)/gs, '<ul class="msg-ul">$1</ul>') // Wrap lists
-      .replace(/\n/g, '<br>') // Line breaks
-      .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="msg-link">$1</a>') // Links
-      .replace(/(\d+\.\d+\.\d+\.\d+)/g, '<span class="msg-ip">$1</span>'); // IP addresses
+  extractCommands(content: string): string[] {
+    const commandRegex = /```json\s*{\s*"command":\s*"([^"]+)"\s*}\s*```/g;
+    const commands: string[] = [];
+    let match;
+    while ((match = commandRegex.exec(content)) !== null) {
+      commands.push(match[1]);
+    }
+    return commands;
   }
 
   formatTime(timestamp: Date): string {
